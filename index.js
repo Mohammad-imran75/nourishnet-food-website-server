@@ -30,8 +30,25 @@ async function run() {
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
-    
-
+    app.get('/foodsitem',async(req,res)=>{
+        const result = await foodCollection.find().toArray();
+        res.send(result);
+    })
+    app.post("/foodsitem", async (req, res) => {
+        const foodInfo = req.body;
+        // console.log(visitor);
+        const result = await foodCollection.insertOne(foodInfo);
+        res.send(result);
+      });
+      app.get("/touristSpot", async (req, res) => {
+        let query = {};
+        if (req.query?.email) {
+          query = { email: req.query?.email };
+        }
+        console.log(query);
+        const result = await touristSpotCollection.find(query).toArray();
+        res.send(result);
+      });
 
   } finally {
     // Ensures that the client will close when you finish/error
