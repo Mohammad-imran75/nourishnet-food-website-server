@@ -23,6 +23,7 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     const foodCollection = client.db("FoodDB").collection("foodsitem");
+    const requestCollection = client.db("FoodDB").collection("request");
     await client.connect();
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
@@ -39,6 +40,7 @@ async function run() {
       const result = await foodCollection.insertOne(foodInfo);
       res.send(result);
     });
+    
     app.get("/foodsitem", async (req, res) => {
       let query = {};
       if (req.query?.email) {
@@ -83,6 +85,17 @@ async function run() {
       const result = await foodCollection.findOne(cursor);
       res.send(result);
     });
+    // request related 
+    app.post("/request", async (req, res) => {
+      const foodInfo = req.body;
+      // console.log(visitor);
+      const result = await requestCollection.insertOne(foodInfo);
+      res.send(result);
+    });
+    app.get('/request',async(req,res)=>{
+      const result = await requestCollection.find().toArray()
+      res.send(result)
+    })
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
