@@ -40,7 +40,7 @@ async function run() {
       const result = await foodCollection.insertOne(foodInfo);
       res.send(result);
     });
-    
+
     app.get("/foodsitem", async (req, res) => {
       let query = {};
       if (req.query?.email) {
@@ -72,11 +72,7 @@ async function run() {
           status: updatedfood.status,
         },
       };
-      const result = await foodCollection.updateOne(
-        filter,
-        foodDoc,
-        options
-      );
+      const result = await foodCollection.updateOne(filter, foodDoc, options);
       res.send(result);
     });
     app.get("/foodsitem/:id", async (req, res) => {
@@ -85,17 +81,50 @@ async function run() {
       const result = await foodCollection.findOne(cursor);
       res.send(result);
     });
-    // request related 
+    // request related
     app.post("/request", async (req, res) => {
       const foodInfo = req.body;
       // console.log(visitor);
       const result = await requestCollection.insertOne(foodInfo);
       res.send(result);
     });
-    app.get('/request',async(req,res)=>{
-      const result = await requestCollection.find().toArray()
-      res.send(result)
-    })
+    app.get("/request", async (req, res) => {
+      const result = await requestCollection.find().toArray();
+      res.send(result);
+    });
+    // for quantity
+    app.put("/quantity", async (req, res) => {
+      try {
+        const foodId = req.query.id;
+        if (!ObjectId.isValid(foodId)) {
+          return res.status(400).send('Invalid ID format');
+        }
+    
+        const food = await foodCollection.findOne({_id: new ObjectId(foodId)});
+        if (!food) {
+          return res.status(404).send('Food item not found');
+        }
+    
+        let quantity = parseInt(food.quantity, 10);
+        if (isNaN(quantity)) {
+          return res.status(400).send('Invalid quantity format');
+        }
+    
+        if (quantity > 0) {
+          quantity -= 1;
+         const result= await foodCollection.updateOne(
+            { _id: new ObjectId(foodId) },
+            { $set: { quantity: quantity.toString() } }
+          );
+          return res.status(200).send({text:'Quantity updated successfully'});
+        } else {
+          return res.status(400).send('Quantity cannot be less than zero');
+        }
+      } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+      }
+    });
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
